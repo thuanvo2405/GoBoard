@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: go-board-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5435:5432"
+    volumes:
+      - goboard:/var/lib/postgresql/data
+
+volumes:
+  goboard:
+    name: goboard

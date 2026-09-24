@@ -1,9 +1,26 @@
-import { Button } from "./components/ui/button";
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+} from "react-router";
+import { RouterProvider } from "react-router/dom";
+import NotFound from "./pages/NotFound";
+import Marketing from "./pages/Marketing";
+import Layout from "./components/Layout";
+import SignUp from "./pages/SignUp";
+
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Marketing />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+      <Route path="sign-up" element={<SignUp />} />
+    </>,
+  ),
+);
 
 export default function App() {
-  return (
-    <div className="flex min-h-svh flex-col items-center justify-center">
-      <Button>Click me</Button>
-    </div>
-  );
+  return <RouterProvider router={router} />;
 }
