@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -20,6 +21,9 @@ type config struct {
 	port int
 	env  string
 	dsn  string
+	cors struct {
+		trustedOrigins []string
+	}
 }
 
 type application struct {
@@ -34,6 +38,10 @@ func main() {
 	flag.IntVar(&cfg.port, "port", 4000, "Host port")
 	flag.StringVar(&cfg.env, "env", "development", "(development|staging|production)")
 	flag.StringVar(&cfg.dsn, "db-dsn", os.Getenv("DSN"), "PostgreSQL DSN")
+	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)", func(val string) error {
+		cfg.cors.trustedOrigins = strings.Fields(val)
+		return nil
+	})
 
 	flag.Parse()
 

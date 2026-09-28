@@ -7,7 +7,7 @@ export type SignUpPayload = {
 
 export async function postSignUp(payload: SignUpPayload) {
   console.log(`${apiUrl}/users`);
-  const response = await fetch(`${apiUrl}/users`, {
+  const response = await fetch(`${apiUrl}/signup`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
