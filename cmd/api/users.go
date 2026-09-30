@@ -57,3 +57,22 @@ func (app *application) RegisterHandler(w http.ResponseWriter, r *http.Request) 
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) CurrentUserHandler(w http.ResponseWriter, r *http.Request) {
+	user := app.contextGetUser(r)
+
+	userResponse := struct {
+		ID    int64  `json:"id"`
+		Name  string `json:"name"`
+		Email string `json:"email"`
+	}{
+		ID:    user.ID,
+		Name:  user.Name,
+		Email: user.Email,
+	}
+	err := app.writeJSON(w, http.StatusOK, envelope{"user": userResponse}, nil)
+
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

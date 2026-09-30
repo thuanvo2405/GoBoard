@@ -1,24 +1,64 @@
 import { apiUrl } from "@/constant";
+import apiFetch from "@/utils/api";
 
-export type SignUpPayload = {
-  email: string;
-  password: string;
+type UserPayload = {
+    name: string;
+    email: string;
+    password: string;
 };
 
+export type SignUpPayload = UserPayload;
+
+export type SignInPayload = Pick<UserPayload, "email" | "password">;
+
 export async function postSignUp(payload: SignUpPayload) {
-  console.log(`${apiUrl}/users`);
-  const response = await fetch(`${apiUrl}/signup`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+    const response = await apiFetch(`${apiUrl}/signup`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+    });
 
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to create account");
-  }
+    const data = await response.json();
 
-  return response.json();
+    if (!response.ok) {
+        throw new Error(data.error.email || "Failed to create account");
+    }
+
+    return data;
+}
+
+export async function postSignIn(payload: SignInPayload) {
+    const response = await apiFetch(`${apiUrl}/signin`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    console.log(response);
+
+    if (!response.ok) {
+        if (response.status == 401) {
+            throw new Error("Your password or email is incorrect");
+        } else {
+            throw new Error("Something went wrong trying to later");
+        }
+    }
+
+    return data;
+}
+
+export async function postLogout() {
+    const response = await apiFetch(`${apiUrl}/logout`, {
+        method: "POST",
+    });
+
+    if (!response.ok) {
+        throw new Error("Something went wrong trying to logout");
+    }
 }
