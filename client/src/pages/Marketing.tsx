@@ -102,7 +102,6 @@ export default function Marketing() {
 
                         <div className="relative overflow-hidden rounded-2xl border bg-card p-2 shadow-2xl shadow-black/10">
                             <div className="rounded-xl border bg-muted/30 p-4 sm:p-6">
-                                {/* Board header */}
                                 <div className="mb-5 flex items-center justify-between">
                                     <div>
                                         <p className="text-left text-sm font-semibold">
@@ -129,9 +128,7 @@ export default function Marketing() {
                                     </div>
                                 </div>
 
-                                {/* Board columns */}
                                 <div className="grid gap-4 text-left md:grid-cols-3">
-                                    {/* TODO */}
                                     <div className="rounded-xl bg-muted/70 p-3">
                                         <div className="mb-3 flex items-center justify-between">
                                             <span className="text-sm font-semibold">
@@ -188,7 +185,6 @@ export default function Marketing() {
                                         </div>
                                     </div>
 
-                                    {/* IN PROGRESS */}
                                     <div className="rounded-xl bg-muted/70 p-3">
                                         <div className="mb-3 flex items-center justify-between">
                                             <span className="text-sm font-semibold">
@@ -231,7 +227,6 @@ export default function Marketing() {
                                         </div>
                                     </div>
 
-                                    {/* DONE */}
                                     <div className="rounded-xl bg-muted/70 p-3">
                                         <div className="mb-3 flex items-center justify-between">
                                             <span className="text-sm font-semibold">

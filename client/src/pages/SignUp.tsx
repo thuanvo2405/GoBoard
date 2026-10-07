@@ -64,7 +64,12 @@ export default function SignUp() {
             onSubmit: formSchema,
         },
         onSubmit: async ({ value }: { value: SignUpPayload }) => {
-            mutation.mutate(value);
+            try {
+                await mutation.mutateAsync(value);
+                form.reset();
+            } catch (error) {
+                // mutation.isError display error message in JSX
+            }
         },
     });
 

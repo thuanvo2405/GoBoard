@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
+	"github.com/julienschmidt/httprouter"
 	"github.com/thuanvo2405/GoBoard/internal/data"
 	"github.com/thuanvo2405/GoBoard/internal/validator"
 )
@@ -106,4 +108,54 @@ func (app *application) requireAuthentication(next http.HandlerFunc) http.Handle
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func (app *application) requireBoardMember(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		params := httprouter.ParamsFromContext(r.Context())
+
+		id, err := strconv.ParseInt(params.ByName("boardID"), 10, 64)
+		if err != nil || id < 1 {
+			app.notFoundResponse(w, r)
+			return
+		}
+
+		user := app.contextGetUser(r)
+		ok, err := app.models.Boards.IsMember(id, user.ID)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		if !ok {
+			app.notFoundResponse(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) requireBoardOwner(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		params := httprouter.ParamsFromContext(r.Context())
+
+		id, err := strconv.ParseInt(params.ByName("boardID"), 10, 64)
+		if err != nil || id < 1 {
+			app.notFoundResponse(w, r)
+			return
+		}
+
+		user := app.contextGetUser(r)
+		ok, err := app.models.Boards.IsOwner(id, user.ID)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		if !ok {
+			app.notPermittedResponse(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	}
 }

@@ -18,5 +18,16 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPost, "/v1/logout", app.DeleteAuthenticationTokenHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/me", app.requireAuthentication(app.CurrentUserHandler))
 
+	//Board
+	router.HandlerFunc(http.MethodPost, "/v1/boards", app.requireAuthentication(app.createBoardHandler))
+	router.HandlerFunc(http.MethodGet, "/v1/boards", app.requireAuthentication(app.getBoardsHandler))
+	router.HandlerFunc(http.MethodGet, "/v1/boards/:id", app.requireAuthentication(app.getBoardHandler))
+	router.HandlerFunc(http.MethodPatch, "/v1/boards/:id", app.requireAuthentication(app.updateBoardHandler))
+	router.HandlerFunc(http.MethodDelete, "/v1/boards/:id", app.requireAuthentication(app.deleteBoardHandler))
+
+	//List
+	router.HandlerFunc(http.MethodPost, "/v1/boards/:boardID/lists", app.requireAuthentication(app.requireBoardMember(app.createListHandler)))
+	//Card
+
 	return app.recoverPanic(app.enableCORS(app.authenticate(router)))
 }
