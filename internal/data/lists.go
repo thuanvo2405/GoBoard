@@ -11,9 +11,10 @@ import (
 
 type List struct {
 	ID       int64  `json:"id"`
-	BoardID  int64  `json:"board_id"`
+	BoardID  int64  `json:"board_id,omitempty"`
 	Name     string `json:"name"`
 	Position int    `json:"position"`
+	Cards    []Card `json:"cards,omitempty"`
 }
 
 type ListModel struct {

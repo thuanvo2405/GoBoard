@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS cards (
+    id bigserial PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version INTEGER NOT NULL DEFAULT 1,
+    list_id bigint NOT NULL REFERENCES lists ON DELETE CASCADE
+);

@@ -17,6 +17,7 @@ type Board struct {
 	CreatedAt time.Time `json:"created_at"`
 	IsPublic  bool      `json:"is_public"`
 	Version   int       `json:"-"`
+	Lists     []List    `json:"lists,omitempty"`
 }
 
 type BoardModel struct {
@@ -101,6 +102,28 @@ func (m *BoardModel) GetAll(userID int64) ([]*Board, error) {
 	return boards, nil
 }
 
+func (m *BoardModel) GetDetail(id int64) (*Board, error) {
+	query := `
+		SELECT id, user_id, name, created_at, is_public, version
+		FROM boards
+		WHERE id = $1
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	board := &Board{}
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(&board.ID, &board.UserID, &board.Name, &board.CreatedAt, &board.IsPublic, &board.Version)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrRecordNotFound
+		}
+		return nil, err
+	}
+
+	return board, nil
+}
+
 // helper validators
 func (m BoardModel) IsMember(boardID, userID int64) (bool, error) {
 	query := `SELECT EXISTS(SELECT 1 FROM board_members WHERE board_id = $1 AND user_id = $2)`
@@ -114,7 +137,7 @@ func (m BoardModel) IsMember(boardID, userID int64) (bool, error) {
 }
 
 func (m BoardModel) IsOwner(boardID, userID int64) (bool, error) {
-	query := `SELECT EXISTS(SELECT 1 FROM board WHERE id = $1 AND user_id = $2)`
+	query := `SELECT EXISTS(SELECT 1 FROM boards WHERE id = $1 AND user_id = $2)`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()

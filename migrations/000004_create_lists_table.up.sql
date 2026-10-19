@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS lists (
-    id SERIAL PRIMARY KEY,
-    board_id INTEGER NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+    id bigserial PRIMARY KEY,
+    board_id bigint NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     position INTEGER NOT NULL
 );
