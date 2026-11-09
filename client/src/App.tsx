@@ -15,6 +15,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "sonner";
 import AuthRoute from "./components/AuthRoute";
 import GuestRoute from "./components/GuestRoute";
+import MainLayout from "./components/MainLayout";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -22,7 +23,9 @@ const router = createBrowserRouter(
             <Route path="/" element={<Layout />}>
                 <Route index element={<Marketing />} />
                 <Route element={<AuthRoute />}>
-                    <Route path="home" element={<HomePage />} />
+                    <Route element={<MainLayout />}>
+                        <Route path="home" element={<HomePage />} />
+                    </Route>
                 </Route>
             </Route>
 

@@ -10,5 +10,5 @@ export default async function getCurrentUser() {
         throw new Error("Error");
     }
 
-    return data;
+    return data.user;
 }

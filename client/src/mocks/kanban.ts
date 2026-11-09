@@ -1,0 +1,121 @@
+export const mockBoard = {
+    id: 1,
+    user_id: 1,
+    name: "Software Development",
+    created_at: "2026-10-19T08:00:00Z",
+    is_public: false,
+    version: 1,
+};
+
+export const mockLists = [
+    { id: 1, board_id: 1, name: "Backlog", position: 0 },
+    { id: 2, board_id: 1, name: "To Do", position: 1 },
+    { id: 3, board_id: 1, name: "In Progress", position: 2 },
+    { id: 4, board_id: 1, name: "Done", position: 3 },
+];
+
+export const mockCards = [
+    {
+        id: 101,
+        title: "Design database schema",
+        description: "Create boards, lists, cards and order tables.",
+        created_at: "2026-10-19T08:00:00Z",
+        version: 1,
+        list_id: 1,
+    },
+    {
+        id: 102,
+        title: "Setup Docker Compose",
+        description: "Configure Go and PostgreSQL services.",
+        created_at: "2026-10-19T08:10:00Z",
+        version: 1,
+        list_id: 1,
+    },
+    {
+        id: 103,
+        title: "Write API documentation",
+        description: "Document API endpoints and response models.",
+        created_at: "2026-10-19T08:20:00Z",
+        version: 1,
+        list_id: 1,
+    },
+    {
+        id: 104,
+        title: "Implement board CRUD",
+        description: "Create, update, get and delete boards.",
+        created_at: "2026-10-19T09:00:00Z",
+        version: 1,
+        list_id: 2,
+    },
+    {
+        id: 105,
+        title: "Implement list CRUD",
+        description: "Manage lists and their positions.",
+        created_at: "2026-10-19T09:10:00Z",
+        version: 1,
+        list_id: 2,
+    },
+    {
+        id: 106,
+        title: "Implement card CRUD",
+        description: "Manage card title and description.",
+        created_at: "2026-10-19T09:20:00Z",
+        version: 1,
+        list_id: 2,
+    },
+    {
+        id: 107,
+        title: "Build Kanban UI",
+        description: "Create board, list and card components.",
+        created_at: "2026-10-19T10:00:00Z",
+        version: 1,
+        list_id: 3,
+    },
+    {
+        id: 108,
+        title: "Implement drag and drop",
+        description: "Allow cards to move between lists.",
+        created_at: "2026-10-19T10:10:00Z",
+        version: 1,
+        list_id: 3,
+    },
+    {
+        id: 109,
+        title: "Connect React to Go API",
+        description: "Fetch board data from backend.",
+        created_at: "2026-10-19T10:20:00Z",
+        version: 1,
+        list_id: 3,
+    },
+    {
+        id: 110,
+        title: "Setup React project",
+        description: "Initialize React with TypeScript.",
+        created_at: "2026-10-19T11:00:00Z",
+        version: 1,
+        list_id: 4,
+    },
+    {
+        id: 111,
+        title: "Implement authentication",
+        description: "Login, register and JWT authentication.",
+        created_at: "2026-10-19T11:10:00Z",
+        version: 1,
+        list_id: 4,
+    },
+    {
+        id: 112,
+        title: "Setup Go backend",
+        description: "Initialize API server and database connection.",
+        created_at: "2026-10-19T11:20:00Z",
+        version: 1,
+        list_id: 4,
+    },
+];
+
+export const mockListCardOrders = [
+    { list_id: 1, card_ids: [103, 101, 102] },
+    { list_id: 2, card_ids: [104, 105, 106] },
+    { list_id: 3, card_ids: [107, 108, 109] },
+    { list_id: 4, card_ids: [111, 110, 112] },
+];
