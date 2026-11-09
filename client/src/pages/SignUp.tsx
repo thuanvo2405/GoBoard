@@ -1,4 +1,4 @@
-import { postSignUp, type SignUpPayload } from "@/api/auth";
+import { postSignUp, type SignUpPayload } from "@/services/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,

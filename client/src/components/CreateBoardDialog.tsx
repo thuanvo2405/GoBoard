@@ -22,10 +22,12 @@ import { useAuth } from "@/context/AuthContext";
 
 type CreateBoardDialogProps = {
     onBoardCreated: (board: Board) => void;
+    appearance?: "sidebar" | "primary";
 };
 
 export default function CreateBoardDialog({
     onBoardCreated,
+    appearance = "sidebar",
 }: CreateBoardDialogProps) {
     const [open, setOpen] = useState(false);
     const { user, loading } = useAuth();
@@ -64,11 +66,11 @@ export default function CreateBoardDialog({
             <DialogTrigger
                 render={
                     <Button
-                        variant="ghost"
-                        className="mt-3 flex w-full items-center gap-3 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-left text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
+                        variant={appearance === "sidebar" ? "ghost" : "default"}
+                        className={appearance === "sidebar" ? "mt-3 flex w-full items-center gap-3 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-left text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring" : undefined}
                     >
                         <Plus className="size-4" aria-hidden="true" />
-                        Add board
+                        {appearance === "sidebar" ? "Add board" : "Create board"}
                     </Button>
                 }
             />

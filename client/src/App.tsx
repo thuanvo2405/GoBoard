@@ -10,12 +10,14 @@ import Layout from "./components/Layout";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
 import HomePage from "./pages/HomePage";
+import BoardPage from "./pages/BoardPage";
 
 import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "sonner";
 import AuthRoute from "./components/AuthRoute";
 import GuestRoute from "./components/GuestRoute";
 import MainLayout from "./components/MainLayout";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -25,6 +27,7 @@ const router = createBrowserRouter(
                 <Route element={<AuthRoute />}>
                     <Route element={<MainLayout />}>
                         <Route path="home" element={<HomePage />} />
+                        <Route path="boards/:boardId" element={<BoardPage />} />
                     </Route>
                 </Route>
             </Route>
@@ -38,13 +41,18 @@ const router = createBrowserRouter(
     ),
 );
 
+const queryClient = new QueryClient();
+
 export default function App() {
     return (
-        <>
+      <>
+        <QueryClientProvider client={queryClient}>
+
             <AuthProvider>
                 <RouterProvider router={router} />
             </AuthProvider>
             <Toaster />
+        </QueryClientProvider>
         </>
     );
 }

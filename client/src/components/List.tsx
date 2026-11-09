@@ -1,14 +1,8 @@
 import KanbanCard, { type KanbanCardData } from "./KanbanCard";
-
-type ListData = {
-    id: number;
-    board_id: number;
-    name: string;
-    position: number;
-};
+import type { BoardList } from "@/types/BoardList";
 
 type ListProps = {
-    data: ListData;
+    data: BoardList;
     cards: KanbanCardData[];
     order:
         | {

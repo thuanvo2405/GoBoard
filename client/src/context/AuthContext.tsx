@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "../types/User";
-import { postLogout, postSignIn, type SignInPayload } from "@/api/auth";
-import getCurrentUser from "@/api/user";
+import { postLogout, postSignIn, type SignInPayload } from "@/services/auth";
+import getCurrentUser from "@/services/user";
 
 type AuthContextType = {
     user: User | null;

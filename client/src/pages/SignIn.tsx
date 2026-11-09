@@ -1,4 +1,4 @@
-import type { SignInPayload } from "@/api/auth";
+import type { SignInPayload } from "@/services/auth";
 import { Button } from "@/components/ui/button";
 import {
     Card,
