@@ -153,13 +153,12 @@ export default function CreateBoardDialog({
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    className="h-9 px-3"
                                 >
                                     Cancel
                                 </Button>
                             }
                         />
-                        <Button type="submit" className="h-9 px-3">
+                        <Button type="submit">
                             Create board
                         </Button>
                     </DialogFooter>

@@ -18,7 +18,7 @@ export default function MainLayout() {
     }
 
     return (
-        <div className="flex min-h-[calc(100dvh-4rem)]">
+        <div className="flex min-h-[calc(100dvh-5rem)]">
             <aside className="w-52 shrink-0 border-r border-sidebar-border bg-sidebar p-3 text-sidebar-foreground sm:w-72 sm:p-5">
                 <NavLink to="/home" className="mb-8 flex items-center gap-3 rounded-lg px-2 pt-2 focus-visible:outline-2 focus-visible:outline-sidebar-ring">
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground">

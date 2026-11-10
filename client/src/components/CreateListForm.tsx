@@ -65,11 +65,11 @@ export default function CreateListForm({ boardId, onOpenChange }: CreateListForm
             </FieldGroup>
             <DialogFooter className="mt-6 gap-2">
                 <DialogClose render={
-                    <Button type="button" variant="outline" className="h-9 px-3" disabled={isSubmitting}>
+                    <Button type="button" variant="outline" disabled={isSubmitting}>
                         Cancel
                     </Button>
                 } />
-                <Button type="submit" className="h-9 px-3" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? "Creating..." : "Create list"}
                 </Button>
             </DialogFooter>

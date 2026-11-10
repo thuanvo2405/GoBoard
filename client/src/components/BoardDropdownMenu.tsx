@@ -12,7 +12,7 @@ export default function BoardDropdownMenu() {
         <DropdownMenu>
             <DropdownMenuTrigger
                 render={
-                    <Button variant="ghost">
+                    <Button variant="ghost" size="icon" aria-label="Board options">
                         <EllipsisVertical
                             className="size-4 shrink-0"
                             aria-hidden="true"
