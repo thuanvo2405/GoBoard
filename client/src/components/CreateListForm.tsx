@@ -18,7 +18,7 @@ export default function CreateListForm({ boardId, onOpenChange }: CreateListForm
     const queryClient = useQueryClient();
     const mutation = useMutation({
         mutationFn: (data: CreateListInput) => createList(boardId, data),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["board", String(boardId)] }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["board-data", String(boardId)] }),
     });
     const form = useForm<CreateListInput>({
         resolver: zodResolver(CreateListSchema),

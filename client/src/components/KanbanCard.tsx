@@ -1,4 +1,5 @@
 import { useSortable } from "@dnd-kit/react/sortable";
+import { Button } from "./ui/button";
 
 export type KanbanCardData = {
     created_at: string;
@@ -12,14 +13,20 @@ export type KanbanCardData = {
 type KanbanCardProps = {
     data: KanbanCardData;
     index: number;
+    column: string;
 };
 
-export default function KanbanCard({ data, index }: KanbanCardProps) {
-    const { ref } = useSortable({ id: data.id, index });
-
+export default function KanbanCard({ data, index ,column}: KanbanCardProps) {
+  const {ref, isDragging} = useSortable({
+    id: data.id,
+    index,
+    type: "item",
+    accept: "item",
+    group: column,
+  });
     return (
-        <div ref={ref} className="bg-gray-300 p-2 rounded">
-            <span>{data.title}</span>
-        </div>
+      <Button ref={ref} data-dragging={isDragging}>
+        {data.title}
+        </Button>
     );
 }

@@ -1,29 +1,28 @@
-import KanbanCard, { type KanbanCardData } from "./KanbanCard";
+import { useSortable } from "@dnd-kit/react/sortable";
 import type { BoardList } from "@/types/BoardList";
+import { CollisionPriority } from "@dnd-kit/abstract";
+import type { ReactNode } from "react";
 
 type ListProps = {
-    data: BoardList;
-    cards: KanbanCardData[];
-    order:
-        | {
-              list_id: number;
-              card_ids: number[];
-          }
-        | undefined;
+  data: BoardList;
+  children: ReactNode | ReactNode[];
+  index: number;
 };
 
-export default function List({ data, cards }: ListProps) {
-    return (
-        <div className="w-72 shrink-0 rounded-lg bg-gray-100 p-3">
-            <h2 className="mb-3 font-semibold">{data.name}</h2>
+export default function List({ data, children, index }: ListProps) {
+  const { ref } = useSortable({
+    id: String(data.id),
+    index,
+    type: "column",
+    accept: ["item", "column"],
+    collisionPriority: CollisionPriority.Low,
+  });
 
-            <div className="flex flex-col gap-2">
-                {cards.map((card, index) => {
-                    return (
-                        <KanbanCard key={card.id} data={card} index={index} />
-                    );
-                })}
-            </div>
-        </div>
-    );
+  return (
+    <div className="w-72 shrink-0 rounded-lg bg-gray-100 p-3" ref={ref}>
+      <h2 className="mb-3 font-semibold">{data.name}</h2>
+
+      <div className="flex flex-col gap-2 min-h-32">{children}</div>
+    </div>
+  );
 }
