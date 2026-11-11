@@ -14,11 +14,16 @@ type CreateListFormProps = {
     onOpenChange: (open: boolean) => void;
 };
 
-export default function CreateListForm({ boardId, onOpenChange }: CreateListFormProps) {
+export default function CreateListForm({
+    boardId,
+    onOpenChange,
+}: CreateListFormProps) {
     const queryClient = useQueryClient();
     const mutation = useMutation({
         mutationFn: (data: CreateListInput) => createList(boardId, data),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["board-data", String(boardId)] }),
+        onSuccess: () => queryClient.invalidateQueries({
+            queryKey: ["board-data", String(boardId)],
+        }),
     });
     const form = useForm<CreateListInput>({
         resolver: zodResolver(CreateListSchema),
@@ -34,7 +39,9 @@ export default function CreateListForm({ boardId, onOpenChange }: CreateListForm
         } catch (error) {
             form.setError("name", {
                 type: "server",
-                message: error instanceof Error ? error.message : "Could not create list. Please try again.",
+                message: error instanceof Error
+                    ? error.message
+                    : "Could not create list. Please try again.",
             });
         }
     }
@@ -47,7 +54,9 @@ export default function CreateListForm({ boardId, onOpenChange }: CreateListForm
                     control={form.control}
                     render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="create-list-name">List name</FieldLabel>
+                            <FieldLabel htmlFor="create-list-name">
+                                List name
+                            </FieldLabel>
                             <Input
                                 {...field}
                                 id="create-list-name"
@@ -64,11 +73,17 @@ export default function CreateListForm({ boardId, onOpenChange }: CreateListForm
                 />
             </FieldGroup>
             <DialogFooter className="mt-6 gap-2">
-                <DialogClose render={
-                    <Button type="button" variant="outline" disabled={isSubmitting}>
-                        Cancel
-                    </Button>
-                } />
+                <DialogClose
+                    render={
+                        <Button
+                            type="button"
+                            variant="outline"
+                            disabled={isSubmitting}
+                        >
+                            Cancel
+                        </Button>
+                    }
+                />
                 <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? "Creating..." : "Create list"}
                 </Button>

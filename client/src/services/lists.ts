@@ -1,39 +1,39 @@
-import { mockLists } from "@/mocks/kanban";
+import { apiUrl } from "@/constant";
 import { CreateListSchema } from "@/schemas/list";
 import type { BoardList, CreateListInput } from "@/types/BoardList";
-
-// Shared in-memory storage. Reloading restores the seed data.
-const lists: BoardList[] = mockLists.map((list) => ({ ...list }));
+import apiFetch from "@/utils/api";
+import { getBoard } from "./boards";
 
 export async function getLists(boardId: number): Promise<BoardList[]> {
-    await new Promise<void>((resolve) => setTimeout(resolve, 300));
+    const { board } = await getBoard(String(boardId));
 
-    return lists
-        .filter((list) => list.board_id === boardId)
-        .sort((a, b) => a.position - b.position)
-        .map((list) => ({ ...list }));
+    return board.lists.map((list) => ({ ...list, board_id: board.id }));
 }
 
 export async function createList(
     boardId: number,
     input: CreateListInput,
 ): Promise<BoardList> {
-    await new Promise<void>((resolve) => setTimeout(resolve, 300));
-
     if (!Number.isSafeInteger(boardId) || boardId <= 0) {
         throw new Error("Board ID is invalid.");
     }
 
-    const data = CreateListSchema.parse(input);
-    const boardLists = lists.filter((list) => list.board_id === boardId);
-    const list: BoardList = {
-        id: Math.max(0, ...lists.map((list) => list.id)) + 1,
-        board_id: boardId,
-        name: data.name,
-        position: Math.max(-1, ...boardLists.map((list) => list.position)) + 1,
-    };
+    const payload = CreateListSchema.parse(input);
+    const response = await apiFetch(`${apiUrl}/boards/${boardId}/lists`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+    });
 
-    lists.push(list);
+    const data = await response.json();
 
-    return { ...list };
+    if (!response.ok) {
+        const message = typeof data.error === "string"
+            ? data.error
+            : data.error?.name;
+
+        throw new Error(message || "Could not create list. Please try again.");
+    }
+
+    return data.list;
 }
