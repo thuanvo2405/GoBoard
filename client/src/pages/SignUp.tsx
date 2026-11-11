@@ -12,13 +12,14 @@ import {
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { byteLength } from "@/utils/convert";
-import { useForm } from "@tanstack/react-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import * as z from "zod";
 
-export const formSchema = z.object({
+const formSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required.")
@@ -54,24 +55,20 @@ export default function SignUp() {
     },
   });
 
-  const form = useForm({
+  const form = useForm<SignUpPayload>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       email: "",
       password: "",
     },
-    validators: {
-      onSubmit: formSchema,
-    },
-    onSubmit: async ({ value }: { value: SignUpPayload }) => {
-      try {
-        await mutation.mutateAsync(value);
-        form.reset();
-      } catch (error) {
-        // mutation.isError display error message in JSX
-      }
-    },
   });
+
+  function onSubmit(value: SignUpPayload) {
+    mutation.mutate(value, {
+      onSuccess: () => form.reset(),
+    });
+  }
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-linear-to-br from-slate-50 via-white to-slate-100 px-4">
@@ -91,10 +88,7 @@ export default function SignUp() {
       <Card className="relative z-10 w-full max-w-md border border-slate-200/80 bg-white/90 py-0 shadow-2xl shadow-slate-200/60 backdrop-blur-xl">
         <form
           id="signup-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            form.handleSubmit();
-          }}
+          onSubmit={form.handleSubmit(onSubmit)}
         >
           <CardHeader className="space-y-2 border-b border-slate-100 px-6 pb-6 pt-7 sm:px-8">
             <div className="space-y-2">
@@ -126,28 +120,25 @@ export default function SignUp() {
               )}
 
               <div className="grid gap-2">
-                <form.Field
+                <Controller
                   name="name"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
+                  control={form.control}
+                  render={({ field, fieldState }) => {
+                    const isInvalid = fieldState.invalid;
 
                     return (
                       <Field data-invalid={isInvalid}>
                         <FieldLabel htmlFor={field.name}>Username</FieldLabel>
 
                         <Input
+                          {...field}
                           id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
                           aria-invalid={isInvalid}
                           placeholder="Bob"
                         />
 
                         {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
+                          <FieldError errors={[fieldState.error]} />
                         )}
                       </Field>
                     );
@@ -156,29 +147,26 @@ export default function SignUp() {
               </div>
 
               <div className="grid gap-2">
-                <form.Field
+                <Controller
                   name="email"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
+                  control={form.control}
+                  render={({ field, fieldState }) => {
+                    const isInvalid = fieldState.invalid;
 
                     return (
                       <Field data-invalid={isInvalid}>
                         <FieldLabel htmlFor={field.name}>Email</FieldLabel>
 
                         <Input
+                          {...field}
                           id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
                           aria-invalid={isInvalid}
                           placeholder="bob@example.com"
                           type="email"
                         />
 
                         {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
+                          <FieldError errors={[fieldState.error]} />
                         )}
                       </Field>
                     );
@@ -187,29 +175,26 @@ export default function SignUp() {
               </div>
 
               <div className="grid gap-2">
-                <form.Field
+                <Controller
                   name="password"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
+                  control={form.control}
+                  render={({ field, fieldState }) => {
+                    const isInvalid = fieldState.invalid;
 
                     return (
                       <Field data-invalid={isInvalid}>
                         <FieldLabel htmlFor={field.name}>Password</FieldLabel>
 
                         <Input
+                          {...field}
                           id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
                           aria-invalid={isInvalid}
                           placeholder="************"
                           type="password"
                         />
 
                         {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
+                          <FieldError errors={[fieldState.error]} />
                         )}
                       </Field>
                     );

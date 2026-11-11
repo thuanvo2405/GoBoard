@@ -12,7 +12,8 @@ import {
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
-import { useForm } from "@tanstack/react-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
@@ -48,20 +49,17 @@ export default function SignIn() {
         },
     });
 
-    const form = useForm({
+    const form = useForm<SignInPayload>({
+        resolver: zodResolver(formSchema),
         defaultValues: {
             email: "",
             password: "",
         },
-
-        validators: {
-            onSubmit: formSchema,
-        },
-
-        onSubmit: async ({ value }: { value: SignInPayload }) => {
-            mutation.mutate(value);
-        },
     });
+
+    function onSubmit(value: SignInPayload) {
+        mutation.mutate(value);
+    }
 
     return (
         <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-linear-to-br from-slate-50 via-white to-slate-100 px-4">
@@ -82,10 +80,7 @@ export default function SignIn() {
             <Card className="relative z-10 w-full max-w-md border border-slate-200/80 bg-white/90 py-0 shadow-2xl shadow-slate-200/60 backdrop-blur-xl">
                 <form
                     id="signin-form"
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        form.handleSubmit();
-                    }}
+                    onSubmit={form.handleSubmit(onSubmit)}
                 >
                     <CardHeader className="space-y-2 border-b border-slate-100 px-6 pb-6 pt-7 sm:px-8">
                         <div className="space-y-2">
@@ -118,12 +113,11 @@ export default function SignIn() {
                                     </div>
                                 )}
 
-                                <form.Field
+                                <Controller
                                     name="email"
-                                    children={(field) => {
-                                        const isInvalid =
-                                            field.state.meta.isTouched &&
-                                            !field.state.meta.isValid;
+                                    control={form.control}
+                                    render={({ field, fieldState }) => {
+                                        const isInvalid = fieldState.invalid;
 
                                         return (
                                             <Field data-invalid={isInvalid}>
@@ -134,15 +128,8 @@ export default function SignIn() {
                                                 </FieldLabel>
 
                                                 <Input
+                                                    {...field}
                                                     id={field.name}
-                                                    name={field.name}
-                                                    value={field.state.value}
-                                                    onBlur={field.handleBlur}
-                                                    onChange={(e) =>
-                                                        field.handleChange(
-                                                            e.target.value,
-                                                        )
-                                                    }
                                                     aria-invalid={isInvalid}
                                                     placeholder="bob@example.com"
                                                     type="email"
@@ -150,10 +137,9 @@ export default function SignIn() {
 
                                                 {isInvalid && (
                                                     <FieldError
-                                                        errors={
-                                                            field.state.meta
-                                                                .errors
-                                                        }
+                                                        errors={[
+                                                            fieldState.error,
+                                                        ]}
                                                     />
                                                 )}
                                             </Field>
@@ -163,12 +149,11 @@ export default function SignIn() {
                             </div>
 
                             <div className="grid gap-2">
-                                <form.Field
+                                <Controller
                                     name="password"
-                                    children={(field) => {
-                                        const isInvalid =
-                                            field.state.meta.isTouched &&
-                                            !field.state.meta.isValid;
+                                    control={form.control}
+                                    render={({ field, fieldState }) => {
+                                        const isInvalid = fieldState.invalid;
 
                                         return (
                                             <Field data-invalid={isInvalid}>
@@ -179,15 +164,8 @@ export default function SignIn() {
                                                 </FieldLabel>
 
                                                 <Input
+                                                    {...field}
                                                     id={field.name}
-                                                    name={field.name}
-                                                    value={field.state.value}
-                                                    onBlur={field.handleBlur}
-                                                    onChange={(e) =>
-                                                        field.handleChange(
-                                                            e.target.value,
-                                                        )
-                                                    }
                                                     aria-invalid={isInvalid}
                                                     placeholder="************"
                                                     type="password"
@@ -195,10 +173,9 @@ export default function SignIn() {
 
                                                 {isInvalid && (
                                                     <FieldError
-                                                        errors={
-                                                            field.state.meta
-                                                                .errors
-                                                        }
+                                                        errors={[
+                                                            fieldState.error,
+                                                        ]}
                                                     />
                                                 )}
                                             </Field>
@@ -221,9 +198,10 @@ export default function SignIn() {
                     <CardFooter className="px-6 pb-7 sm:px-8">
                         <Button
                             type="submit"
+                            disabled={mutation.isPending}
                             className="h-11 w-full rounded-xl font-semibold shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
                         >
-                            Sign in
+                            {mutation.isPending ? "Signing in..." : "Sign in"}
                         </Button>
                     </CardFooter>
                 </form>
