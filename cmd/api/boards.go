@@ -91,6 +91,17 @@ func (app *application) getBoardHandler(w http.ResponseWriter, r *http.Request) 
 		app.serverErrorResponse(w, r, err)
 		return
 	}
+	cards := []data.Card{}
+	if err := app.models.Cards.GetAll(boardID, &cards); err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	orders, err := app.models.Lists.GetCardOrders(boardID)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 	board.Lists = lists
 
 	response := struct {
@@ -104,7 +115,11 @@ func (app *application) getBoardHandler(w http.ResponseWriter, r *http.Request) 
 	err = app.writeJSON(
 		w,
 		http.StatusOK,
-		envelope{"board": response},
+		envelope{
+			"board":            response,
+			"cards":            cards,
+			"list_card_orders": orders,
+		},
 		nil,
 	)
 	if err != nil {

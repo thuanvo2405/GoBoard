@@ -14,7 +14,6 @@ type List struct {
 	BoardID  int64  `json:"board_id,omitempty"`
 	Name     string `json:"name"`
 	Position int    `json:"position"`
-	Cards    []Card `json:"cards,omitempty"`
 }
 
 type ListModel struct {
@@ -58,7 +57,7 @@ func (m *ListModel) GetByBoardID(boardID int64) ([]List, error) {
 		SELECT id, name, position
 		FROM lists
 		WHERE board_id = $1
-		ORDER BY position;
+		ORDER BY position, id;
 	`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)

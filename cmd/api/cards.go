@@ -61,7 +61,7 @@ func (app *application) getCardsHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var cards []data.Card
+	cards := []data.Card{}
 
 	err = app.models.Cards.GetAll(boardID, &cards)
 	if err != nil {
@@ -69,6 +69,17 @@ func (app *application) getCardsHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"cards": cards}, nil)
+	orders, err := app.models.Lists.GetCardOrders(boardID)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 
+	err = app.writeJSON(w, http.StatusOK, envelope{
+		"cards":            cards,
+		"list_card_orders": orders,
+	}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
