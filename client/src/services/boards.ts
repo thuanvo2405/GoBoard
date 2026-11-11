@@ -1,5 +1,5 @@
 import { apiUrl } from "@/constant";
-import type { Board, BoardDetail } from "@/types/Board";
+import type { Board, BoardDetailResponse } from "@/types/Board";
 import apiFetch from "@/utils/api";
 
 type CreateBoardPayload = {
@@ -19,7 +19,7 @@ export async function getBoards(): Promise<Board[]> {
     return data.boards;
 }
 
-export async function getBoard(boardId: number): Promise<BoardDetail> {
+export async function getBoard(boardId: string): Promise<BoardDetailResponse> {
     const response = await apiFetch(`${apiUrl}/boards/${boardId}`);
 
     const data = await response.json();
@@ -28,7 +28,7 @@ export async function getBoard(boardId: number): Promise<BoardDetail> {
         throw new Error(data.error || "Failed to fetch board");
     }
 
-    return data.board;
+    return data;
 }
 
 export async function createBoard(payload: CreateBoardPayload): Promise<Board> {
