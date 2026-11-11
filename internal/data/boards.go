@@ -31,8 +31,7 @@ var (
 
 func ValidateBoard(v *validator.Validator, board *Board) {
 	v.Check(board.Name != "", "name", "must be provided")
-	v.Check(utf8.RuneCountInString(board.Name) <= 50, "name", "must not be more than 36 characters")
-
+	v.Check(utf8.RuneCountInString(board.Name) <= 50, "name", "must not be more than 50 characters")
 }
 
 func (m *BoardModel) Insert(board *Board) error {
@@ -53,7 +52,7 @@ func (m *BoardModel) Insert(board *Board) error {
 	}
 	defer tx.Rollback()
 
-	err = m.DB.QueryRowContext(ctx, query, args...).Scan(&board.ID, &board.UserID, &board.Name, &board.CreatedAt, &board.Version)
+	err = tx.QueryRowContext(ctx, query, args...).Scan(&board.ID, &board.UserID, &board.Name, &board.CreatedAt, &board.Version)
 	if err != nil {
 		return err
 	}
@@ -71,9 +70,11 @@ func (m *BoardModel) Insert(board *Board) error {
 
 func (m *BoardModel) GetAll(userID int64) ([]*Board, error) {
 	query := `
-		SELECT id, user_id, name, created_at, version
-		FROM boards
-		WHERE user_id = $1
+		SELECT b.id, b.user_id, b.name, b.created_at, b.is_public, b.version
+		FROM boards b
+		JOIN board_members bm ON bm.board_id = b.id
+		WHERE bm.user_id = $1
+		ORDER BY b.created_at DESC, b.id DESC
 	`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -88,7 +89,7 @@ func (m *BoardModel) GetAll(userID int64) ([]*Board, error) {
 	boards := []*Board{}
 	for rows.Next() {
 		board := &Board{}
-		err := rows.Scan(&board.ID, &board.UserID, &board.Name, &board.CreatedAt, &board.Version)
+		err := rows.Scan(&board.ID, &board.UserID, &board.Name, &board.CreatedAt, &board.IsPublic, &board.Version)
 		if err != nil {
 			return nil, err
 		}

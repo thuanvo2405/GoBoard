@@ -159,3 +159,28 @@ func (app *application) requireBoardOwner(next http.HandlerFunc) http.HandlerFun
 		next.ServeHTTP(w, r)
 	}
 }
+
+func (app *application) requireListBoardMember(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		listID, err := app.readIDParam(r, "listID")
+		if err != nil {
+			app.notFoundResponse(w, r)
+			return
+		}
+
+		user := app.contextGetUser(r)
+
+		ok, err := app.models.Lists.IsBoardMember(listID, user.ID)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+
+		if !ok {
+			app.notFoundResponse(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	}
+}

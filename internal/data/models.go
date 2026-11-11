@@ -15,6 +15,7 @@ type Models struct {
 	Tokens TokenModel
 	Boards BoardModel
 	Lists  ListModel
+	Cards  CardModel
 }
 
 func NewModels(db *sql.DB) Models {
@@ -23,5 +24,6 @@ func NewModels(db *sql.DB) Models {
 		Tokens: TokenModel{db},
 		Boards: BoardModel{db},
 		Lists:  ListModel{db},
+		Cards:  CardModel{db},
 	}
 }

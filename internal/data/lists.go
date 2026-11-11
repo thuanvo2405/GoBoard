@@ -52,3 +52,55 @@ func (m *ListModel) Insert(list *List) error {
 
 	return nil
 }
+
+func (m *ListModel) GetByBoardID(boardID int64) ([]List, error) {
+	query := `
+		SELECT id, name, position
+		FROM lists
+		WHERE board_id = $1
+		ORDER BY position;
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, query, boardID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	lists := []List{}
+	for rows.Next() {
+		var list List
+		err := rows.Scan(&list.ID, &list.Name, &list.Position)
+		if err != nil {
+			return nil, err
+		}
+		lists = append(lists, list)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return lists, nil
+}
+
+func (m *ListModel) IsBoardMember(listID, userID int64) (bool, error) {
+	query := `
+		SELECT EXISTS (
+			SELECT 1
+			FROM lists l
+			JOIN board_members bm ON bm.board_id = l.board_id
+			WHERE l.id = $1 AND bm.user_id = $2
+		)
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var ok bool
+	err := m.DB.QueryRowContext(ctx, query, listID, userID).Scan(&ok)
+	return ok, err
+}

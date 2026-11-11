@@ -21,7 +21,7 @@ func (app *application) routes() http.Handler {
 	//Board
 	router.HandlerFunc(http.MethodPost, "/v1/boards", app.requireAuthentication(app.createBoardHandler))
 	router.HandlerFunc(http.MethodGet, "/v1/boards", app.requireAuthentication(app.getBoardsHandler))
-	// router.HandlerFunc(http.MethodGet, "/v1/boards/:id", app.requireAuthentication(app.getBoardHandler))
+	router.HandlerFunc(http.MethodGet, "/v1/boards/:boardID", app.requireAuthentication(app.requireBoardMember(app.getBoardHandler)))
 	router.HandlerFunc(http.MethodPatch, "/v1/boards/:id", app.requireAuthentication(app.updateBoardHandler))
 	router.HandlerFunc(http.MethodDelete, "/v1/boards/:id", app.requireAuthentication(app.deleteBoardHandler))
 
@@ -29,7 +29,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPost, "/v1/boards/:boardID/lists", app.requireAuthentication(app.requireBoardMember(app.createListHandler)))
 
 	//Card
-	router.HandlerFunc(http.MethodPost, "/v1/lists/:listID/cards", app.requireAuthentication(app.createCardHandler))
-
+	router.HandlerFunc(http.MethodGet, "/v1/boards/:boardID/cards", app.requireAuthentication(app.requireBoardMember(app.getCardsHandler)))
+	router.HandlerFunc(http.MethodPost, "/v1/lists/:listID/cards", app.requireAuthentication(app.requireListBoardMember(app.createCardHandler)))
 	return app.recoverPanic(app.enableCORS(app.authenticate(router)))
 }

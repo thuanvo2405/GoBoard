@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/thuanvo2405/GoBoard/internal/data"
@@ -27,8 +26,9 @@ func (app *application) createCardHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	card := &data.Card{
-		Title:  input.Title,
-		ListID: listID,
+		Title:       input.Title,
+		Description: "",
+		ListID:      listID,
 	}
 
 	if input.Description != nil {
@@ -42,6 +42,33 @@ func (app *application) createCardHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	fmt.Println(card)
+	err = app.models.Cards.Insert(card)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusCreated, envelope{"card": card}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) getCardsHandler(w http.ResponseWriter, r *http.Request) {
+	boardID, err := app.readIDParam(r, "boardID")
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	var cards []data.Card
+
+	err = app.models.Cards.GetAll(boardID, &cards)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"cards": cards}, nil)
 
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -67,29 +68,49 @@ func (app *application) getBoardsHandler(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-// func (app *application) getBoardHandler(w http.ResponseWriter, r *http.Request) {
-// 	boardID, err := app.readIDParam(r, "boardID")
-// 	if err != nil {
-// 		app.badRequestResponse(w, r, err)
-// 		return
-// 	}
+func (app *application) getBoardHandler(w http.ResponseWriter, r *http.Request) {
+	boardID, err := app.readIDParam(r, "boardID")
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
 
-// 	board, err := app.models.Boards.GetDetails(boardID)
-// 	if err != nil {
-// 		switch {
-// 		case errors.Is(err, data.ErrRecordNotFound):
-// 			app.notFoundResponse(w, r)
-// 		default:
-// 			app.serverErrorResponse(w, r, err)
-// 		}
-// 		return
-// 	}
+	board, err := app.models.Boards.GetDetail(boardID)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
 
-// 	err = app.writeJSON(w, http.StatusOK, envelope{"board": board}, nil)
-// 	if err != nil {
-// 		app.serverErrorResponse(w, r, err)
-// 	}
-// }
+	lists, err := app.models.Lists.GetByBoardID(boardID)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	board.Lists = lists
+
+	response := struct {
+		*data.Board
+		Lists []data.List `json:"lists"`
+	}{
+		Board: board,
+		Lists: lists,
+	}
+
+	err = app.writeJSON(
+		w,
+		http.StatusOK,
+		envelope{"board": response},
+		nil,
+	)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
 
 func (app *application) updateBoardHandler(w http.ResponseWriter, r *http.Request) {
 
