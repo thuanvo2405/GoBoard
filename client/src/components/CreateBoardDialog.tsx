@@ -17,20 +17,30 @@ import { Controller, useForm } from "react-hook-form";
 import { CreateBoardSchema } from "@/schemas/board";
 import { Field, FieldError, FieldGroup, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
-import type { Board } from "@/types/Board";
-import { useAuth } from "@/context/AuthContext";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createBoard } from "@/services/boards";
+import { useNavigate } from "react-router";
 
 type CreateBoardDialogProps = {
-    onBoardCreated: (board: Board) => void;
     appearance?: "sidebar" | "primary";
 };
 
 export default function CreateBoardDialog({
-    onBoardCreated,
     appearance = "sidebar",
 }: CreateBoardDialogProps) {
     const [open, setOpen] = useState(false);
-    const { user, loading } = useAuth();
+    const queryClient = useQueryClient();
+    const navigate = useNavigate();
+
+    const mutation = useMutation({
+        mutationFn: createBoard,
+        onSuccess: async (board) => {
+            await queryClient.invalidateQueries({ queryKey: ["boards"] });
+            form.reset();
+            setOpen(false);
+            navigate(`/boards/${board.id}`);
+        },
+    });
 
     const form = useForm<z.infer<typeof CreateBoardSchema>>({
         resolver: zodResolver(CreateBoardSchema),
@@ -41,24 +51,10 @@ export default function CreateBoardDialog({
     });
 
     function onSubmit(data: z.infer<typeof CreateBoardSchema>) {
-        if (loading || !user) {
-            form.setError("root", {
-                message: "Please sign in to create a board.",
-            });
-            return;
-        }
-
-        const newBoard: Board = {
-            id: Date.now(),
-            user_id: user.id,
+        mutation.mutate({
             name: data.title,
-            created_at: new Date().toISOString(),
             is_public: data.is_public,
-        };
-        console.log(newBoard);
-        onBoardCreated(newBoard);
-        form.reset();
-        setOpen(false);
+        });
     }
 
     return (
@@ -67,10 +63,16 @@ export default function CreateBoardDialog({
                 render={
                     <Button
                         variant={appearance === "sidebar" ? "ghost" : "default"}
-                        className={appearance === "sidebar" ? "mt-3 flex w-full items-center gap-3 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-left text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring" : undefined}
+                        className={
+                            appearance === "sidebar"
+                                ? "mt-3 flex w-full items-center gap-3 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-left text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
+                                : undefined
+                        }
                     >
                         <Plus className="size-4" aria-hidden="true" />
-                        {appearance === "sidebar" ? "Add board" : "Create board"}
+                        {appearance === "sidebar"
+                            ? "Add board"
+                            : "Create board"}
                     </Button>
                 }
             />
@@ -147,19 +149,21 @@ export default function CreateBoardDialog({
                             )}
                         />
                     </FieldGroup>
+                    {mutation.isError && (
+                        <p role="alert">{mutation.error.message}</p>
+                    )}
                     <DialogFooter className="mt-6 gap-2">
                         <DialogClose
                             render={
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                >
+                                <Button type="button" variant="outline">
                                     Cancel
                                 </Button>
                             }
                         />
-                        <Button type="submit">
-                            Create board
+                        <Button type="submit" disabled={mutation.isPending}>
+                            {mutation.isPending
+                                ? "Creating..."
+                                : "Create board"}
                         </Button>
                     </DialogFooter>
                 </form>

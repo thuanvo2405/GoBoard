@@ -45,14 +45,13 @@ const queryClient = new QueryClient();
 
 export default function App() {
     return (
-      <>
-        <QueryClientProvider client={queryClient}>
-
-            <AuthProvider>
-                <RouterProvider router={router} />
-            </AuthProvider>
-            <Toaster />
-        </QueryClientProvider>
+        <>
+            <QueryClientProvider client={queryClient}>
+                <AuthProvider>
+                    <RouterProvider router={router} />
+                </AuthProvider>
+                <Toaster />
+            </QueryClientProvider>
         </>
     );
 }

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "../types/User";
 import { postLogout, postSignIn, type SignInPayload } from "@/services/auth";
 import getCurrentUser from "@/services/user";
+import { useQueryClient } from "@tanstack/react-query";
 
 type AuthContextType = {
     user: User | null;
@@ -15,6 +16,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+    const queryClient = useQueryClient();
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(() => {
         return localStorage.getItem("token");
@@ -62,6 +64,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(null);
         setToken(null);
         localStorage.removeItem("token");
+
+        queryClient.clear();
     }
 
     return (

@@ -1,26 +1,34 @@
-import { useState } from "react";
 import { LayoutDashboard } from "lucide-react";
-import { NavLink, Outlet, useNavigate, useParams } from "react-router";
+import { NavLink, Outlet, useParams } from "react-router";
 import BoardDropdownMenu from "./BoardDropdownMenu";
 import CreateBoardDialog from "./CreateBoardDialog";
-import { mockBoards } from "@/mocks/boards";
-import type { Board } from "@/types/Board";
 import type { WorkspaceContext } from "@/types/Workspace";
+import { useQuery } from "@tanstack/react-query";
+import { getBoards } from "@/services/boards";
 
 export default function MainLayout() {
-    const [boards, setBoards] = useState<Board[]>(() => [...mockBoards]);
     const { boardId } = useParams();
-    const navigate = useNavigate();
 
-    function handleBoardCreated(board: Board) {
-        setBoards((current) => [...current, board]);
-        navigate(`/boards/${board.id}`);
-    }
+    const {
+        data: boards = [],
+        isPending,
+        error,
+    } = useQuery({
+        queryKey: ["boards"],
+        queryFn: getBoards,
+    });
+
+    if (isPending) return <p>Loading...</p>;
+
+    if (error) return <p role="alert">{error.message}</p>;
 
     return (
         <div className="flex min-h-[calc(100dvh-5rem)]">
             <aside className="w-52 shrink-0 border-r border-sidebar-border bg-sidebar p-3 text-sidebar-foreground sm:w-72 sm:p-5">
-                <NavLink to="/home" className="mb-8 flex items-center gap-3 rounded-lg px-2 pt-2 focus-visible:outline-2 focus-visible:outline-sidebar-ring">
+                <NavLink
+                    to="/home"
+                    className="mb-8 flex items-center gap-3 rounded-lg px-2 pt-2 focus-visible:outline-2 focus-visible:outline-sidebar-ring"
+                >
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground">
                         <LayoutDashboard
                             className="size-5"
@@ -76,12 +84,18 @@ export default function MainLayout() {
                         })}
                     </ul>
 
-                    <CreateBoardDialog onBoardCreated={handleBoardCreated} />
+                    <CreateBoardDialog />
                 </nav>
             </aside>
 
             <div className="min-w-0 flex-1">
-                <Outlet context={{ boards, onBoardCreated: handleBoardCreated } satisfies WorkspaceContext} />
+                <Outlet
+                    context={
+                        {
+                            boards,
+                        } satisfies WorkspaceContext
+                    }
+                />
             </div>
         </div>
     );
