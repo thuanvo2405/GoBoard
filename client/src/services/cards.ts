@@ -1,6 +1,8 @@
 import { mockCards, mockListCardOrders } from "@/mocks/kanban";
 import { CreateCardSchema } from "@/schemas/card";
 import type { Card, CreateCardInput } from "@/types/Card";
+import { apiUrl } from "@/constant";
+import apiFetch from "@/utils/api";
 
 // Shared in-memory storage. Reloading restores the seed data.
 const cards: Card[] = mockCards.map((card) => ({ ...card }));
@@ -35,30 +37,23 @@ export async function createCard(
     listId: number,
     input: CreateCardInput,
 ): Promise<Card> {
-    await new Promise<void>((resolve) => setTimeout(resolve, 300));
     validateListId(listId);
 
-    const data = CreateCardSchema.parse(input);
-    const card: Card = {
-        id: Math.max(0, ...cards.map((card) => card.id)) + 1,
-        list_id: listId,
-        title: data.title,
-        description: data.description ?? "",
-        created_at: new Date().toISOString(),
-        version: 1,
-    };
+    const payload = CreateCardSchema.parse(input);
+    const response = await apiFetch(`${apiUrl}/lists/${listId}/cards`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+    });
+    const data = await response.json();
 
-    let order = orders.find((order) => order.list_id === listId);
-    if (!order) {
-        order = {
-            list_id: listId,
-            card_ids: cards.filter((card) => card.list_id === listId).map((card) => card.id),
-        };
-        orders.push(order);
+    if (!response.ok) {
+        const message = typeof data.error === "string"
+            ? data.error
+            : data.error?.title || data.error?.description;
+
+        throw new Error(message || "Could not create card. Please try again.");
     }
 
-    cards.push(card);
-    order.card_ids.push(card.id);
-
-    return { ...card };
+    return data.card;
 }
