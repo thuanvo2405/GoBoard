@@ -3,17 +3,22 @@ import List from "@/components/List";
 import { DragDropProvider } from "@dnd-kit/react";
 import { Link, useParams } from "react-router";
 import CreateListDialog from "@/components/CreateListDialog";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import KanbanCard from "@/components/KanbanCard";
 import type { Card } from "@/types/Card";
 import { move } from "@dnd-kit/helpers";
 import { getBoard } from "@/services/boards";
+import { updateListOrder } from "@/services/lists";
+import { toast } from "sonner";
 
 export default function BoardPage() {
     const { boardId } = useParams<{ boardId: string }>();
+    const queryClient = useQueryClient();
     const [items, setItems] = useState<Record<string, Card[]>>({});
     const [columnOrder, setColumnOrder] = useState<string[]>([]);
-    const previousItems = useRef(items);
+    const previousItems = useRef<Record<string, Card[]>>(items);
+    const previousColumnOrder = useRef<string[]>([]);
+
     const { data, isPending, isError } = useQuery({
         queryKey: ["board-data", boardId],
         enabled: Boolean(boardId),
@@ -23,6 +28,20 @@ export default function BoardPage() {
             }
 
             return getBoard(boardId);
+        },
+    });
+
+    const orderMutation = useMutation({
+        mutationFn: (nextOrder: string[]) => {
+            return updateListOrder(Number(boardId), nextOrder.map(Number));
+        },
+        onSuccess: () => queryClient.invalidateQueries({
+            queryKey: ["board-data", boardId],
+            exact: true,
+        }),
+        onError: () => {
+            setColumnOrder(previousColumnOrder.current);
+            toast.error("Không thể lưu thứ tự cột.");
         },
     });
 
@@ -80,6 +99,7 @@ export default function BoardPage() {
                 key={data.board.id}
                 onDragStart={() => {
                     previousItems.current = items;
+                    previousColumnOrder.current = [...columnOrder];
                 }}
 
                 onDragOver={(event) => {
@@ -102,11 +122,28 @@ export default function BoardPage() {
                     }
 
                     if (source?.type === "column") {
-                        setColumnOrder((columns) => move(columns, event));
+                        const nextOrder = move(columnOrder, event);
+
+                        if (
+                            nextOrder.every(
+                                (id, index) => id === columnOrder[index],
+                            )
+                        ) {
+                            return;
+                        }
+
+                        setColumnOrder(nextOrder);
+                        orderMutation.mutate(nextOrder);
                     }
                 }}
             >
-                <div className="flex items-start gap-4 overflow-x-auto p-4">
+                <div
+                    inert={orderMutation.isPending}
+                    aria-busy={orderMutation.isPending}
+                    className={`flex items-start gap-4 overflow-x-auto p-4 transition-opacity ${
+                        orderMutation.isPending ? "opacity-60 grayscale" : ""
+                    }`}
+                >
                     {columnOrder.map((columnId, index) => {
                         const list = data.board.lists.find(
                             (list) => String(list.id) === columnId,

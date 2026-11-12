@@ -28,12 +28,26 @@ export async function createList(
     const data = await response.json();
 
     if (!response.ok) {
-        const message = typeof data.error === "string"
-            ? data.error
-            : data.error?.name;
+        const message =
+            typeof data.error === "string" ? data.error : data.error?.name;
 
         throw new Error(message || "Could not create list. Please try again.");
     }
 
     return data.list;
+}
+
+export async function updateListOrder(
+    boardId: number,
+    listIds: number[],
+): Promise<void> {
+    const response = await apiFetch(`${apiUrl}/boards/${boardId}/lists/order`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ list_ids: listIds }),
+    });
+
+    if (!response.ok) {
+        throw new Error("Không thể lưu thứ tự cột.");
+    }
 }
