@@ -1,4 +1,4 @@
-import type { BoardList } from "./BoardList";
+import type { BoardList, ListCardOrders } from "./BoardList";
 import type { Card } from "./Card";
 
 export type BoardDetail = Board & {
@@ -8,10 +8,7 @@ export type BoardDetail = Board & {
 export type BoardDetailResponse = {
     board: BoardDetail;
     cards: Card[];
-    list_card_orders: {
-        list_id: number;
-        card_ids: number[];
-    }[];
+    list_card_orders: ListCardOrders[];
 };
 
 export type Board = {

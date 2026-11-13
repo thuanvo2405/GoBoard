@@ -9,3 +9,8 @@ export type BoardList = {
     name: string;
     position: number;
 };
+
+export type ListCardOrders = {
+    list_id: number;
+    card_ids: number[];
+};

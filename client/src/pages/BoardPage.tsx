@@ -10,6 +10,7 @@ import { move } from "@dnd-kit/helpers";
 import { getBoard } from "@/services/boards";
 import { updateListOrder } from "@/services/lists";
 import { toast } from "sonner";
+import { updateCardOrder } from "@/services/cards";
 
 export default function BoardPage() {
     const { boardId } = useParams<{ boardId: string }>();
@@ -35,15 +36,28 @@ export default function BoardPage() {
         mutationFn: (nextOrder: string[]) => {
             return updateListOrder(Number(boardId), nextOrder.map(Number));
         },
-        onSuccess: () => queryClient.invalidateQueries({
-            queryKey: ["board-data", boardId],
-            exact: true,
-        }),
+        onSuccess: () =>
+            queryClient.invalidateQueries({
+                queryKey: ["board-data", boardId],
+                exact: true,
+            }),
         onError: () => {
             setColumnOrder(previousColumnOrder.current);
             toast.error("Không thể lưu thứ tự cột.");
         },
     });
+
+    const cardOrderMutation = useMutation({
+        mutationFn: (input: { list_id: number; card_ids: number[] }) =>
+            updateCardOrder(Number(boardId), input.list_id, input.card_ids),
+        onError: () => {
+            setItems(previousItems.current);
+            toast.error("Không thể lưu thứ tự card.");
+        },
+    });
+
+    const isPendingAction =
+        orderMutation.isPending || cardOrderMutation.isPending;
 
     useEffect(() => {
         if (!data) return;
@@ -121,6 +135,33 @@ export default function BoardPage() {
                         return;
                     }
 
+                    if (source?.type === "item") {
+                        const changedLists = Object.entries(items)
+                            .filter(([listId, cards]) => {
+                                const oldCards =
+                                    previousItems.current[listId] ?? [];
+
+                                return (
+                                    cards.length !== oldCards.length ||
+                                    cards.some(
+                                        (card, index) =>
+                                            card.id !== oldCards[index]?.id,
+                                    )
+                                );
+                            })
+                            .map(([listId, cards]) => ({
+                                list_id: Number(listId),
+                                card_ids: cards.map((card) => card.id),
+                            }));
+
+                        if (changedLists.length === 0) return;
+
+                        const order = changedLists[0];
+                        if (!order) return;
+
+                        cardOrderMutation.mutate(order);
+                    }
+
                     if (source?.type === "column") {
                         const nextOrder = move(columnOrder, event);
 
@@ -138,10 +179,12 @@ export default function BoardPage() {
                 }}
             >
                 <div
-                    inert={orderMutation.isPending}
-                    aria-busy={orderMutation.isPending}
+                    inert={isPendingAction}
+                    aria-busy={isPendingAction}
                     className={`flex items-start gap-4 overflow-x-auto p-4 transition-opacity ${
-                        orderMutation.isPending ? "opacity-60 grayscale" : ""
+                        isPendingAction
+                            ? "pointer-events-none opacity-50 grayscale"
+                            : ""
                     }`}
                 >
                     {columnOrder.map((columnId, index) => {

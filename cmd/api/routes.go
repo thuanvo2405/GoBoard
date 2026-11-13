@@ -34,5 +34,9 @@ func (app *application) routes() http.Handler {
 	//Card
 	router.HandlerFunc(http.MethodGet, "/v1/boards/:boardID/cards", app.requireAuthentication(app.requireBoardMember(app.getCardsHandler)))
 	router.HandlerFunc(http.MethodPost, "/v1/lists/:listID/cards", app.requireAuthentication(app.requireListBoardMember(app.createCardHandler)))
+
+	//Card Order
+	router.HandlerFunc(http.MethodPatch, "/v1/boards/:boardID/cards/order", app.requireAuthentication(app.requireBoardMember(app.updateCardOrderHandler)))
+
 	return app.recoverPanic(app.enableCORS(app.authenticate(router)))
 }
