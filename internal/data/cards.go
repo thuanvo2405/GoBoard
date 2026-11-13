@@ -134,6 +134,16 @@ func (m *CardModel) UpdateOrder(boardID, listID int64, cardIDs []int64) error {
 	defer tx.Rollback()
 
 	var id int64
+	// Serialize card-order changes within a board before taking list/card locks.
+	// Opposite-direction moves must not each hold a card the other needs.
+	err = tx.QueryRowContext(ctx, `SELECT id FROM boards WHERE id = $1 FOR UPDATE`, boardID).Scan(&id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrRecordNotFound
+	}
+	if err != nil {
+		return err
+	}
+
 	err = tx.QueryRowContext(ctx, `SELECT id FROM lists WHERE id = $1 AND board_id = $2 FOR UPDATE`, listID, boardID).Scan(&id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return ErrRecordNotFound
@@ -160,15 +170,64 @@ func (m *CardModel) UpdateOrder(boardID, listID int64, cardIDs []int64) error {
 	if err := rows.Close(); err != nil {
 		return err
 	}
-	if len(existing) != len(cardIDs) {
-		return ErrInvalidCardOrder
-	}
+
+	var movedCardID int64
+	seen := make(map[int64]bool, len(cardIDs))
 	for _, id := range cardIDs {
-		if !existing[id] {
+		if id <= 0 || seen[id] {
 			return ErrInvalidCardOrder
 		}
-		delete(existing, id)
+		seen[id] = true
+		if existing[id] {
+			delete(existing, id)
+			continue
+		}
+		// Only one card may arrive from another list in a single operation.
+		if movedCardID != 0 {
+			return ErrInvalidCardOrder
+		}
+		movedCardID = id
 	}
+	if len(existing) != 0 {
+		return ErrInvalidCardOrder
+	}
+
+	if movedCardID != 0 {
+		var oldListID int64
+		err = tx.QueryRowContext(ctx, `
+		    SELECT c.list_id
+		    FROM cards c
+		    JOIN lists l ON l.id = c.list_id
+		    WHERE c.id = $1 AND l.board_id = $2
+		    FOR UPDATE OF c
+		`, movedCardID, boardID).Scan(&oldListID)
+
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrRecordNotFound
+		}
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.ExecContext(ctx, `
+			UPDATE cards
+			SET list_id = $1
+			WHERE id = $2
+		`, listID, movedCardID)
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.ExecContext(ctx, `
+		    UPDATE list_card_orders
+		    SET card_ids = array_remove(card_ids, $1::bigint)
+		    WHERE list_id = $2
+		`, movedCardID, oldListID)
+		if err != nil {
+			return err
+		}
+	}
+
 	_, err = tx.ExecContext(ctx, `
 		INSERT INTO list_card_orders (list_id, card_ids)
 		VALUES ($1, $2)

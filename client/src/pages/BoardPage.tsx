@@ -156,7 +156,10 @@ export default function BoardPage() {
 
                         if (changedLists.length === 0) return;
 
-                        const order = changedLists[0];
+                        // The destination is the list now containing the dragged card.
+                        const order = changedLists.find((entry) =>
+                            entry.card_ids.includes(Number(source.id)),
+                        );
                         if (!order) return;
 
                         cardOrderMutation.mutate(order);
