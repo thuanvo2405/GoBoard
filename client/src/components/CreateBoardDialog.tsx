@@ -23,10 +23,12 @@ import { useNavigate } from "react-router";
 
 type CreateBoardDialogProps = {
     appearance?: "sidebar" | "primary";
+    collapsed?: boolean;
 };
 
 export default function CreateBoardDialog({
     appearance = "sidebar",
+    collapsed = false,
 }: CreateBoardDialogProps) {
     const [open, setOpen] = useState(false);
     const queryClient = useQueryClient();
@@ -63,16 +65,20 @@ export default function CreateBoardDialog({
                 render={
                     <Button
                         variant={appearance === "sidebar" ? "ghost" : "default"}
+                        aria-label={appearance === "sidebar" ? "Add board" : "Create board"}
+                        title={collapsed ? "Add board" : undefined}
                         className={
                             appearance === "sidebar"
-                                ? "mt-3 flex w-full items-center gap-3 rounded-lg border border-dashed border-sidebar-border px-3 py-3 text-left text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
+                                ? `mt-3 flex w-full items-center gap-3 rounded-lg border border-dashed border-sidebar-border text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring ${collapsed ? "h-11 justify-center p-0" : "px-3 py-3 text-left"}`
                                 : undefined
                         }
                     >
                         <Plus className="size-4" aria-hidden="true" />
-                        {appearance === "sidebar"
-                            ? "Add board"
-                            : "Create board"}
+                        <span className={collapsed && appearance === "sidebar" ? "sr-only" : undefined}>
+                            {appearance === "sidebar"
+                                ? "Add board"
+                                : "Create board"}
+                        </span>
                     </Button>
                 }
             />
